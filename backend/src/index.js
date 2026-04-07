@@ -11,6 +11,8 @@ app.use(clerkMiddleware());
 app.use("/api/inngest", serve({ client: inngest, functions }));
 
 app.get("/", (req, res) => {
+  console.log("hi");
+  
   return res.send("hello");
 });
 
