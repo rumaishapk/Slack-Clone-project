@@ -4,21 +4,22 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+    "dev": "NODE_OPTIONS='--import ./instrument.mjs' nodemon src/index.js",
+    "start": "NODE_OPTIONS='--import ./instrument.mjs' node src/index.js"
+  }, 
   "keywords": [],
   "author": "",
   "type": "module",
   "license": "ISC",
   "dependencies": {
     "@clerk/express": "^1.7.4",
-  
+    "@sentry/node": "^10.1.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "inngest": "^3.40.1",
     "mongoose": "^8.16.5",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "stream-chat": "^9.41.0"
   }
 }
