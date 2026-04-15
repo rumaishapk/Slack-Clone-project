@@ -1,16 +1,22 @@
-import {
-  SignedOut,
-  SignedIn,
-} from "@clerk/clerk-react";
+import { SignedOut, SignedIn } from "@clerk/clerk-react";
 import { Route, Navigate, Routes } from "react-router";
 
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 
+import * as Sentry from "@sentry/react"
+
+
 const App = () => {
+const sentryRoutes = Sentry.wrapCreateBrowserRouterV7(
+  createBrowserRouter,
+);
+
+
   return (
-    <div>
+    <div> 
       <header>
+       
         <SignedIn>
           <Routes>
             <Route path="/" element={<HomePage />}></Route>
