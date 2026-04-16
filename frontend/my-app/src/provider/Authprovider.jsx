@@ -26,8 +26,8 @@ export default function AuthProvider({ children }) {
         return config;
       },
       (error) => {
-        console.Error("Axios request error:", error);
-        return promise.reject(error);
+        console.error("Axios request error:", error);
+        return Promise.reject(error);
       },
     );
 
