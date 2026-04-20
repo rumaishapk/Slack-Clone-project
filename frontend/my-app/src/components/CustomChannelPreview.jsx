@@ -14,6 +14,7 @@ const CustomChannelPreview = ({
   const unreadCount =
     typeof channel.countUnread === "function" ? channel.countUnread() : 0;
   const channelName = channel.data?.name || channel.data?.id || "Untitled";
+//    const unreadCount = channel.countUnread();
 
   return (
     <div>
