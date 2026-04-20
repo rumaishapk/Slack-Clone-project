@@ -1,7 +1,7 @@
 import { UserButton } from "@clerk/clerk-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
-import { PlusIcon } from "lucide-react";
+import { HashIcon, PlusIcon, UsersIcon } from "lucide-react";
 import { useStreamChat } from "../Hooks/useStreamChat";
 import PageLoader from "../components/PageLoader";
 import "../styles/stream-chat-theme.css";
@@ -15,7 +15,9 @@ import {
   Window,
 } from "stream-chat-react";
 
-import CreateChannelModel from "../components/CreateChannelModel";
+import CreateChannelModal from "../components/CreateChannelModal";
+import CustomChannelPreview from "../components/CustomChannelPreview";
+import UsersList from "../components/UsersList";
 
 const HomePage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -24,14 +26,11 @@ const HomePage = () => {
   const { chatClient, error, isLoading } = useStreamChat();
   const channelId = searchParams.get("channel");
   const activeChannel =
-    chatClient && channelId
-      ? chatClient.channel("messaging", channelId)
-      : null;
+    chatClient && channelId ? chatClient.channel("messaging", channelId) : null;
   const filters = chatClient?.userID
     ? { type: "messaging", members: { $in: [chatClient.userID] } }
     : { type: "messaging" };
   const sort = { last_message_at: -1 };
-  const options = { limit: 20 };
 
   if (error) return <p>{error.message || "Something went wrong..."}</p>;
   if (isLoading || !chatClient) return <PageLoader />;
@@ -40,7 +39,7 @@ const HomePage = () => {
     <div className="chat-wrapper">
       <Chat client={chatClient}>
         <div className="chat-container">
-          <div className="str_chat___channel-list">
+          <div className="str-chat__channel-list">
             <div className="team-channel-list">
               <div className="team-channel-list__header gap-4">
                 <div className="brand-container">
@@ -63,13 +62,48 @@ const HomePage = () => {
                 </div>
                 <ChannelList
                   filters={filters}
-                  options={options}
+                  options={{ state: true, watch: true }}
                   sort={sort}
-                  onSelect={(channel) => {
-                    if (channel?.id) {
-                      setSearchParams({ channel: channel.id });
-                    }
-                  }}
+                  Preview={({ channel }) => (
+                    <CustomChannelPreview
+                      channel={channel}
+                      activeChannel={activeChannel}
+                      setActiveChannel={(nextChannel) =>
+                        setSearchParams({ channel: nextChannel.id })
+                      }
+                    />
+                  )}
+                  List={({ children, loading, error }) => (
+                    <div className="channel-sections">
+                      <div className="section-header">
+                        <div className="section-title">
+                          <HashIcon className="size-4" />
+                          <span>Channels</span>
+                        </div>
+                      </div>
+
+                      {loading && (
+                        <div className="loading-message">
+                          Loading channels...
+                        </div>
+                      )}
+                      {error && (
+                        <div className="error-message">
+                          Error loading channels
+                        </div>
+                      )}
+
+                      <div className="channels-list">{children}</div>
+
+                      <div className="section-header direct-messages">
+                        <div className="section-title">
+                          <UsersIcon className="size-4" />
+                          <span>Direct Messages</span>
+                        </div>
+                      </div>
+                      <UsersList activeChannel={activeChannel} />
+                    </div>
+                  )}
                 />
               </div>
             </div>
@@ -92,7 +126,7 @@ const HomePage = () => {
           </div>
         </div>
         {isCreateModalOpen && (
-          <CreateChannelModel onClose={() => setIsCreateModalOpen(false)} />
+          <CreateChannelModal onClose={() => setIsCreateModalOpen(false)} />
         )}
       </Chat>
     </div>
