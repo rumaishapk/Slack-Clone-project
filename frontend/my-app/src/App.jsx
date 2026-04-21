@@ -4,8 +4,6 @@ import { Route, Navigate, Routes } from "react-router";
 import HomePage from "./pages/HomePage";
 import AuthPage from "./pages/AuthPage";
 
-import * as Sentry from "@sentry/react";
-const SentryRoutes = Sentry.withSentryReactRouterV7Routing(Routes);
 import CallPage from "./pages/callPage";
 
 const App = () => {
@@ -16,7 +14,7 @@ const App = () => {
   return (
     <div>
       <header>
-        <SentryRoutes>
+        <Routes>
           <Route
             path="/"
             element={
@@ -43,7 +41,7 @@ const App = () => {
               )
             }
           />
-        </SentryRoutes>
+        </Routes>
       </header>
     </div>
   );

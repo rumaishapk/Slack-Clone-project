@@ -4,13 +4,6 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { ClerkProvider } from "@clerk/clerk-react";
-import {
-  createRoutesFromChildren,
-  matchRoutes,
-  useLocation,
-  useNavigationType,
-} from "react-router";
-
 import { BrowserRouter } from "react-router";
 import { Toaster } from "react-hot-toast";
 import AuthProvider from "./provider/Authprovider.jsx";
@@ -28,15 +21,6 @@ if (!PUBLISHABLE_KEY) {
 
 Sentry.init({
   dsn: "https://18db2165f2c8fba4f973710125147264@o4511154667913216.ingest.us.sentry.io/4511154688950272",
-  integrations: [
-    Sentry.reactRouterV7BrowserTracingIntegration({
-      useEffect: React.useEffect,
-      useLocation,
-      useNavigationType,
-      createRoutesFromChildren,
-      matchRoutes,
-    }),
-  ],
   tracesSampleRate: 1.0,
 });
 
