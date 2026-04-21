@@ -20,7 +20,7 @@ if (!PUBLISHABLE_KEY) {
 }
 
 Sentry.init({
-  dsn: "https://18db2165f2c8fba4f973710125147264@o4511154667913216.ingest.us.sentry.io/4511154688950272",
+  dsn: import.meta.env.VITE_SENTRY_DSN,
   tracesSampleRate: 1.0,
 });
 
