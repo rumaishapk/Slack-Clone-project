@@ -11,12 +11,60 @@ import cors from "cors"
 
 
 const app = express();
+const configuredOrigins = [ENV.CLIENT_URL, ENV.CLIENT_URLS]
+  .filter(Boolean)
+  .flatMap((value) => value.split(","))
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const vercelPreviewOrigins = configuredOrigins
+  .map((origin) => {
+    try {
+      const { hostname } = new URL(origin);
+
+      if (!hostname.endsWith(".vercel.app")) {
+        return null;
+      }
+
+      const projectName = hostname.replace(".vercel.app", "");
+      return `https://${projectName}-git-`;
+    } catch {
+      return null;
+    }
+  })
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) {
+    return true;
+  }
+
+  if (configuredOrigins.includes(origin)) {
+    return true;
+  }
+
+  return vercelPreviewOrigins.some(
+    (previewPrefix) =>
+      origin.startsWith(previewPrefix) && origin.endsWith(".vercel.app"),
+  );
+};
+
 const corsOptions = {
-  origin: ENV.CLIENT_URL,
+  origin(origin, callback) {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin ${origin} is not allowed by CORS.`));
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(clerkMiddleware());
 app.use(express.json());
 app.get("/debug-sentry", (req,res) =>{

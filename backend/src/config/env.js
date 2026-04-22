@@ -12,5 +12,5 @@ export const ENV = {
     INNGEST_EVENT_KEY : process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY :process.env.INNGEST_SIGNING_KEY,
     CLIENT_URL:process.env.CLIENT_URL,
+    CLIENT_URLS: process.env.CLIENT_URLS,
 }
-
