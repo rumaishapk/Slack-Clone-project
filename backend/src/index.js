@@ -10,7 +10,13 @@ import * as Sentry from "@sentry/node";
 
 
 const app = express();
-const configuredOrigins = [ENV.CLIENT_URL, ENV.CLIENT_URLS]
+const defaultOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://slack-clone-project-frontend.vercel.app",
+];
+
+const configuredOrigins = [...new Set([...defaultOrigins, ENV.CLIENT_URL, ENV.CLIENT_URLS])]
   .filter(Boolean)
   .flatMap((value) => value.split(","))
   .map((value) => value.trim())
