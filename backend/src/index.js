@@ -7,7 +7,6 @@ import { functions, inngest } from "./config/inngest.js";
 import { serve } from "inngest/express";
 import chatRoutes from "./routes/chat.route.js";
 import * as Sentry from "@sentry/node"; 
-import cors from "cors"
 
 
 const app = express();
@@ -49,22 +48,32 @@ const isAllowedOrigin = (origin) => {
   );
 };
 
-const corsOptions = {
-  origin(origin, callback) {
-    if (isAllowedOrigin(origin)) {
-      return callback(null, true);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (isAllowedOrigin(origin)) {
+    if (origin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
     }
 
-    return callback(new Error(`Origin ${origin} is not allowed by CORS.`));
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  optionsSuccessStatus: 204,
-};
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization",
+    );
+  }
 
-app.use(cors(corsOptions));
-app.options(/.*/, cors(corsOptions));
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(isAllowedOrigin(origin) ? 204 : 403);
+  }
+
+  return next();
+});
 app.use(clerkMiddleware());
 app.use(express.json());
 app.get("/debug-sentry", (req,res) =>{
