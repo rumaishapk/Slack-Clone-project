@@ -16,29 +16,44 @@ const configuredOrigins = [ENV.CLIENT_URL, ENV.CLIENT_URLS]
   .map((value) => value.trim())
   .filter(Boolean);
 
-const vercelPreviewOrigins = configuredOrigins
-  .map((origin) => {
-    try {
-      const { hostname } = new URL(origin);
+const getVercelProjectRoot = (origin) => {
+  try {
+    const { hostname } = new URL(origin);
 
-      if (!hostname.endsWith(".vercel.app")) {
-        return null;
-      }
-
-      const projectName = hostname.replace(".vercel.app", "");
-      return `https://${projectName}-git-`;
-    } catch {
+    if (!hostname.endsWith(".vercel.app")) {
       return null;
     }
-  })
-  .filter(Boolean);
+
+    const projectSlug = hostname.replace(".vercel.app", "");
+    return projectSlug.split("-git-")[0];
+  } catch {
+    return null;
+  }
+};
+
+const vercelProjectRoots = [...new Set(
+  configuredOrigins
+    .map(getVercelProjectRoot)
+    .filter(Boolean),
+)];
+
+const vercelProductionOrigins = vercelProjectRoots.map(
+  (projectRoot) => `https://${projectRoot}.vercel.app`,
+);
+
+const vercelPreviewOrigins = vercelProjectRoots.map(
+  (projectRoot) => `https://${projectRoot}-git-`,
+);
 
 const isAllowedOrigin = (origin) => {
   if (!origin) {
     return true;
   }
 
-  if (configuredOrigins.includes(origin)) {
+  if (
+    configuredOrigins.includes(origin) ||
+    vercelProductionOrigins.includes(origin)
+  ) {
     return true;
   }
 
