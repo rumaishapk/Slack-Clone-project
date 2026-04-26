@@ -40,6 +40,7 @@ const UsersList = ({ activeChannel }) => {
         .slice(0, 64);
       const channel = client.channel("messaging", channelId, {
         members: [client.user.id, targetUser.id],
+        isDirectMessage: true,
       });
       await channel.watch();
       setSearchParams({ channel: channel.id });
@@ -75,6 +76,7 @@ const UsersList = ({ activeChannel }) => {
           .slice(0, 64);
         const channel = client.channel("messaging", channelId, {
           members: [client.user.id, user.id],
+          isDirectMessage: true,
         });
         const unreadCount = channel.countUnread();
         const isActive = activeChannel && activeChannel.id === channelId;

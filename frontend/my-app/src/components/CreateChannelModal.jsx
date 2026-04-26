@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router"
 import { useChatContext } from "stream-chat-react"
+import { useAuth } from "@clerk/clerk-react"
 import * as Sentry from "@sentry/react"
 import toast from "react-hot-toast"
 import { AlertCircleIcon, HashIcon, LockIcon, UsersIcon, XIcon } from "lucide-react"
+import { createChannel as createChannelRequest } from "../lib/api"
 
 const CreateChannelModal = ({ onClose }) => {
 
@@ -17,7 +19,8 @@ const CreateChannelModal = ({ onClose }) => {
   const [loadingUsers, setLoadingUsers] = useState(false)
   const [_, setSearchParams] = useSearchParams()
 
-  const { client, setActiveChannel } = useChatContext()
+  const { client } = useChatContext()
+  const { getToken } = useAuth()
 
   // fetch users for member selection
   useEffect(() => {
@@ -92,42 +95,51 @@ const CreateChannelModal = ({ onClose }) => {
     setError("")
 
     try {
-      const channelId = channelName
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-_]/g, "")
-        .slice(0, 20);
+      const authToken = await getToken()
 
-console.log("here5");
-      const channelData = {
-        name: channelName.trim(),
-        created_by_id: client.user.id,
-        members: [client.user.id, ...selectedMembers],
-      };
-
-      if (description) channelData.description = description;
-console.log("here4");
-      if (channelType === "private") {
-        channelData.private = true;
-        channelData.visibility = "private";
-      } else {
-        channelData.visibility = "public";
-        channelData.discoverable = true;
+      if (!authToken) {
+        throw new Error("Failed to get auth token.")
       }
-console.log("here3");
-      const channel = client.channel("messaging", channelId, channelData);
-console.log("here1");
 
+      const response = await createChannelRequest(
+        {
+          name: channelName.trim(),
+          description: description.trim(),
+          channelType,
+          selectedMemberIds: selectedMembers,
+        },
+        authToken,
+      )
+
+      const createdChannel = response?.channel
+
+      if (!createdChannel?.id) {
+        throw new Error("Backend did not return the created channel.")
+      }
+
+      const channel = client.channel("messaging", createdChannel.id)
       await channel.watch();
-console.log("here2");
-      setActiveChannel(channel);
-      setSearchParams({ channel: channelId });
+      setSearchParams({ channel: createdChannel.id });
 
       toast.success(`Channel "${channelName}" created successfully!`)
       onClose();
     } catch (error) {
+      const message =
+        error?.response?.data?.message ??
+        error?.message ??
+        "Failed to create channel";
+
       console.log("Error creating the channel", error)
+      setError(message)
+      toast.error(message)
+      Sentry.captureException(error, {
+        tags: { component: "CreateChannelModal" },
+        extra: {
+          context: "create_channel",
+          channelName: channelName.trim(),
+          channelType,
+        },
+      });
     } finally {
       setIsCreating(false)
     }

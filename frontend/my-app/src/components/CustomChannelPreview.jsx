@@ -1,4 +1,5 @@
 import { HashIcon } from "lucide-react";
+import { isDirectMessageChannel } from "../lib/channel";
 
 const CustomChannelPreview = ({
   channel,
@@ -6,8 +7,7 @@ const CustomChannelPreview = ({
   activeChannel,
 }) => {
   const isActive = activeChannel?.id === channel.id;
-  const isDm =
-    channel.data?.member_count === 2 && channel.data?.id?.includes("user_");
+  const isDm = isDirectMessageChannel(channel);
 
   if (isDm) return null;
 
